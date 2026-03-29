@@ -32,7 +32,7 @@ if (process.argv.includes('--mcp-stdio')) {
 
   // SPA fallback (skip MCP/API routes)
   app.get('*', (req, res) => {
-    if (req.path.startsWith('/api/') || req.path === '/mcp' || req.path === '/sse' || req.path === '/messages') {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/mcp') || req.path.startsWith('/sse')) {
       return res.status(404).json({ error: 'Not found' });
     }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
