@@ -1,5 +1,6 @@
 /**
  * Notion MCP Chatbot — Frontend Application
+ * Supports structured data rendering via Components.js
  */
 (function () {
   const messagesEl = document.getElementById('messages');
@@ -46,6 +47,21 @@
       statusDot.classList.add('offline');
       statusText.textContent = 'Offline';
     }
+
+    // Load databases for welcome screen
+    try {
+      const res = await fetch('/api/databases');
+      const dbs = await res.json();
+      renderWelcomeDatabases(dbs);
+    } catch {}
+  }
+
+  function renderWelcomeDatabases(dbs) {
+    const container = document.getElementById('welcome-databases');
+    if (!container || !dbs || dbs.length === 0) return;
+    container.innerHTML = dbs.slice(0, 6).map(db =>
+      `<button class="db-chip" onclick="sendAction('query ${db.id}')">${escHtml(db.title)}</button>`
+    ).join('');
   }
 
   init();
@@ -77,7 +93,7 @@
       if (res.ok) {
         sessionId = data.sessionId;
         sessionStorage.setItem('chatSessionId', sessionId);
-        appendMessage('assistant', data.response);
+        appendMessage('assistant', data.response, data.structured, data.suggestions);
       } else {
         appendMessage('error', data.error || 'Something went wrong. Please try again.');
       }
@@ -91,8 +107,14 @@
     inputEl.focus();
   }
 
+  // Make sendMessage available globally for Components.js onclick handlers
+  window.sendAction = function(action) {
+    inputEl.value = action;
+    sendMessage(action);
+  };
+
   // --- DOM ---
-  function appendMessage(role, content) {
+  function appendMessage(role, content, structured, suggestions) {
     const msg = document.createElement('div');
     msg.className = `message ${role}`;
 
@@ -118,10 +140,32 @@
 
     const contentEl = document.createElement('div');
     contentEl.className = 'message-content';
+
     if (role === 'user') {
       contentEl.textContent = content;
     } else {
+      // Render markdown text
       contentEl.innerHTML = window.renderMarkdown(content);
+
+      // Render rich components if structured data exists
+      if (structured && typeof Components !== 'undefined') {
+        const richHtml = Components.render(structured, suggestions);
+        if (richHtml) {
+          const richEl = document.createElement('div');
+          richEl.className = 'rich-content';
+          richEl.innerHTML = richHtml;
+          contentEl.appendChild(richEl);
+        }
+      } else if (suggestions && suggestions.length > 0 && typeof Components !== 'undefined') {
+        // Just render suggestion chips
+        const chipsHtml = Components.suggestionChips(suggestions);
+        if (chipsHtml) {
+          const chipsEl = document.createElement('div');
+          chipsEl.className = 'rich-content';
+          chipsEl.innerHTML = chipsHtml;
+          contentEl.appendChild(chipsEl);
+        }
+      }
     }
 
     body.appendChild(sender);
@@ -174,6 +218,12 @@
 
   function updateSendButton() {
     sendBtn.disabled = isLoading || !inputEl.value.trim();
+  }
+
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
   }
 
   // --- New chat ---

@@ -8,7 +8,7 @@ const sessions = new Map();
 
 // Cleanup old sessions every 30 minutes
 setInterval(() => {
-  const cutoff = Date.now() - 60 * 60 * 1000; // 1 hour
+  const cutoff = Date.now() - 60 * 60 * 1000;
   for (const [id, session] of sessions) {
     if (session.lastAccess < cutoff) sessions.delete(id);
   }
@@ -24,7 +24,6 @@ router.post('/', async (req, res) => {
 
     const sessionId = clientSessionId || uuidv4();
 
-    // Get or create session
     if (!sessions.has(sessionId)) {
       sessions.set(sessionId, { history: [], lastAccess: Date.now() });
     }
@@ -32,12 +31,16 @@ router.post('/', async (req, res) => {
     const session = sessions.get(sessionId);
     session.lastAccess = Date.now();
 
-    const result = await chat(session.history, message.trim());
+    const result = await chat(session.history, message.trim(), sessionId);
     session.history = result.conversationHistory;
 
     res.json({
       sessionId,
       response: result.response,
+      structured: result.structured || null,
+      suggestions: result.suggestions || [],
+      tool: result.tool || null,
+      confidence: result.confidence || null,
     });
   } catch (err) {
     console.error('Chat error:', err.message);

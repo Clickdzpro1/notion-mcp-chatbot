@@ -10,6 +10,7 @@ if (process.argv.includes('--mcp-stdio')) {
   const cors = require('cors');
   const path = require('path');
   const { mountMcpRoutes } = require('./lib/mcp-server');
+  const dbCache = require('./lib/database-cache');
 
   const app = express();
 
@@ -30,6 +31,11 @@ if (process.argv.includes('--mcp-stdio')) {
     res.json({ botName: config.botName });
   });
 
+  // Database list for frontend autocomplete
+  app.get('/api/databases', (req, res) => {
+    res.json(dbCache.getAll());
+  });
+
   // SPA fallback (skip MCP/API routes)
   app.get('*', (req, res) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/mcp') || req.path.startsWith('/sse')) {
@@ -38,20 +44,26 @@ if (process.argv.includes('--mcp-stdio')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 
-  // Bind to 0.0.0.0 for Railway/Render/Docker compatibility
-  app.listen(config.port, '0.0.0.0', () => {
-    console.log('');
-    console.log(`  ✦ ${config.botName} is running!`);
-    console.log('');
-    console.log(`  Chat UI:    http://localhost:${config.port}`);
-    console.log(`  MCP Server: http://localhost:${config.port}/mcp`);
-    console.log(`  MCP (SSE):  http://localhost:${config.port}/sse`);
-    console.log(`  Health:     http://localhost:${config.port}/api/health`);
-    console.log('');
-    console.log(`  Mode:       Zero-dependency (no AI API needed)`);
-    console.log('');
-    console.log('  → Paste the MCP Server URL into your Notion agent\'s');
-    console.log('    "Custom MCP server" connection dialog.');
-    console.log('');
+  // Init database cache then start server
+  dbCache.refresh().then(() => {
+    app.listen(config.port, '0.0.0.0', () => {
+      console.log('');
+      console.log(`  ✦ ${config.botName} is running!`);
+      console.log('');
+      console.log(`  Chat UI:    http://localhost:${config.port}`);
+      console.log(`  MCP Server: http://localhost:${config.port}/mcp`);
+      console.log(`  MCP (SSE):  http://localhost:${config.port}/sse`);
+      console.log(`  Health:     http://localhost:${config.port}/api/health`);
+      console.log('');
+      console.log(`  Mode:       Zero-dependency (no AI API needed)`);
+      console.log(`  Databases:  ${dbCache.getAll().length} cached`);
+      console.log('');
+    });
+  }).catch(err => {
+    console.error('Failed to init database cache:', err.message);
+    // Start anyway — cache will refresh on first request
+    app.listen(config.port, '0.0.0.0', () => {
+      console.log(`  ✦ ${config.botName} running on port ${config.port} (cache failed, will retry)`);
+    });
   });
 }
