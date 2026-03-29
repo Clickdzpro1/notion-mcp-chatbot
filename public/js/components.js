@@ -40,6 +40,12 @@ const Components = {
       case 'created':
         html = this.createdCard(structured);
         break;
+      case 'onboarding_step':
+        html = this.onboardingStep(structured);
+        break;
+      case 'onboarding_complete':
+        html = this.onboardingComplete();
+        break;
       default:
         break;
     }
@@ -250,6 +256,31 @@ const Components = {
     return `<div class="rich-card rich-card-wide">
       ${propsHtml ? `<div class="rich-props">${propsHtml}</div>` : ''}
       ${data.url ? `<a href="${escAttr(data.url)}" target="_blank" class="chip-btn" style="margin-top:8px;display:inline-block;">🔗 Open in Notion</a>` : ''}
+    </div>`;
+  },
+
+  // ============================================================
+  // Onboarding Step
+  // ============================================================
+  onboardingStep(data) {
+    const pct = data.progress || 0;
+    return `<div class="ob-card">
+      <div class="ob-header">
+        <span class="ob-badge">Setup</span>
+        <span class="ob-progress-text">Step ${data.stepNumber}/${data.totalSteps}</span>
+      </div>
+      <div class="wf-progress-bar"><div class="wf-progress-fill" style="width:${pct}%"></div></div>
+      ${data.detected != null ? `<div class="ob-score">
+        <span class="ob-score-num">${data.detected}/${data.total}</span>
+        <span class="ob-score-label">databases detected (${data.score}%)</span>
+      </div>` : ''}
+    </div>`;
+  },
+
+  onboardingComplete() {
+    return `<div class="ob-card ob-complete">
+      <div class="ob-complete-icon">🎉</div>
+      <div class="ob-complete-text">Setup Complete — AGENT ZERO is ready!</div>
     </div>`;
   },
 
