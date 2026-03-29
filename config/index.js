@@ -40,7 +40,7 @@ module.exports = {
   claudeModel: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
 
   // OpenRouter settings
-  openRouterModel: process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-exp:free',
+  openRouterModel: process.env.OPENROUTER_MODEL || 'openrouter/free',
   openRouterSiteUrl: process.env.OPENROUTER_SITE_URL || null,
 
   botName: process.env.BOT_NAME || 'Notion Assistant',

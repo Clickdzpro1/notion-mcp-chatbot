@@ -14,7 +14,9 @@ router.get('/', async (req, res) => {
     status.notion_error = err.message;
   }
 
-  status.claude = !!require('../config').hasAI;
+  const cfg = require('../config');
+  status.ai = cfg.hasAI;
+  status.ai_provider = cfg.aiProvider;
   status.status = status.notion ? 'ok' : 'degraded';
   res.json(status);
 });
