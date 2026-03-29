@@ -20,6 +20,7 @@ module.exports = {
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || null,
   hasAI: !!process.env.ANTHROPIC_API_KEY,
   notionApiKey: process.env.NOTION_API_KEY,
+  mcpToken: process.env.MCP_AUTH_TOKEN || null,
   notionDatabaseIds: process.env.NOTION_DATABASE_IDS
     ? process.env.NOTION_DATABASE_IDS.split(',').map(id => id.trim()).filter(Boolean)
     : [],
