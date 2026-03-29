@@ -34,6 +34,12 @@ const Components = {
       case 'help':
         html = this.helpCard(structured);
         break;
+      case 'workflow_step':
+        html = this.workflowStep(structured);
+        break;
+      case 'created':
+        html = this.createdCard(structured);
+        break;
       default:
         break;
     }
@@ -194,6 +200,103 @@ const Components = {
   // ============================================================
   // Suggestion Chips
   // ============================================================
+  // ============================================================
+  // Workflow Step
+  // ============================================================
+  workflowStep(data) {
+    const pct = data.progress || 0;
+    const dots = Array.from({ length: data.totalSteps }, (_, i) => {
+      const state = i < data.currentStep ? 'done' : i === data.currentStep ? 'active' : 'pending';
+      return `<div class="step-dot ${state}"></div>`;
+    }).join('');
+
+    let optionsHtml = '';
+    if (data.options && data.options.length > 0) {
+      optionsHtml = `<div class="wf-options">${data.options.map(o =>
+        `<button class="chip-btn" onclick="sendAction('${escAttr(o)}')">${escHtml(o)}</button>`
+      ).join('')}</div>`;
+    }
+
+    let collectedHtml = '';
+    if (data.collected && Object.keys(data.collected).length > 0) {
+      collectedHtml = `<div class="wf-collected">${Object.entries(data.collected).map(([k, v]) =>
+        `<span class="wf-tag">✅ ${escHtml(k)}: ${escHtml(String(v))}</span>`
+      ).join('')}</div>`;
+    }
+
+    return `<div class="wf-card">
+      <div class="wf-header">
+        <span class="wf-label">${escHtml(data.workflowLabel || 'Workflow')}</span>
+        <span class="wf-progress">Step ${data.currentStep + 1}/${data.totalSteps}</span>
+      </div>
+      <div class="wf-progress-bar"><div class="wf-progress-fill" style="width:${pct}%"></div></div>
+      <div class="wf-dots">${dots}</div>
+      ${collectedHtml}
+      ${optionsHtml}
+    </div>`;
+  },
+
+  // ============================================================
+  // Created Card
+  // ============================================================
+  createdCard(data) {
+    if (!data) return '';
+    let propsHtml = '';
+    if (data.properties) {
+      propsHtml = Object.entries(data.properties).map(([k, v]) =>
+        `<div class="rich-prop"><span class="rich-prop-key">${escHtml(k)}</span><span class="rich-prop-val">${escHtml(String(v))}</span></div>`
+      ).join('');
+    }
+    return `<div class="rich-card rich-card-wide">
+      ${propsHtml ? `<div class="rich-props">${propsHtml}</div>` : ''}
+      ${data.url ? `<a href="${escAttr(data.url)}" target="_blank" class="chip-btn" style="margin-top:8px;display:inline-block;">🔗 Open in Notion</a>` : ''}
+    </div>`;
+  },
+
+  // ============================================================
+  // Dashboard
+  // ============================================================
+  dashboard(data) {
+    let html = '<div class="dashboard">';
+
+    // Quick stats
+    if (data.quickStats && Object.keys(data.quickStats).length > 0) {
+      html += '<div class="dash-stats">';
+      const statLabels = { totalClients: '👥 Clients', openTasks: '📋 Tasks', totalSales: '💰 Sales', pendingLeads: '🎯 Leads' };
+      for (const [key, stat] of Object.entries(data.quickStats)) {
+        html += `<div class="dash-stat" onclick="sendAction('query ${stat.dbId}')">
+          <div class="dash-stat-value">${stat.count}</div>
+          <div class="dash-stat-label">${statLabels[key] || key}</div>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    // Quick actions
+    if (data.quickActions && data.quickActions.length > 0) {
+      html += '<div class="dash-actions">';
+      data.quickActions.forEach(a => {
+        html += `<button class="chip-btn" onclick="sendAction('${escAttr(a.action)}')">${escHtml(a.label)}</button>`;
+      });
+      html += '</div>';
+    }
+
+    // Database list
+    if (data.databases && data.databases.length > 0) {
+      html += '<div class="dash-dbs">';
+      data.databases.slice(0, 8).forEach(db => {
+        html += `<div class="dash-db" onclick="sendAction('query ${db.id}')">
+          <div class="dash-db-title">${escHtml(db.title)}</div>
+          <div class="dash-db-desc">${escHtml(db.description || '')}</div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  },
+
   suggestionChips(suggestions) {
     if (!suggestions || suggestions.length === 0) return '';
     return `<div class="suggestion-chips">${suggestions.map(s =>

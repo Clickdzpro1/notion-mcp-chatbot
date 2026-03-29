@@ -25,6 +25,7 @@ if (process.argv.includes('--mcp-stdio')) {
   app.use('/api/chat', require('./routes/chat'));
   app.use('/api/notion', require('./routes/notion'));
   app.use('/api/health', require('./routes/health'));
+  app.use('/api/dashboard', require('./routes/dashboard'));
 
   // Bot config endpoint
   app.get('/api/config', (req, res) => {

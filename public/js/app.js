@@ -48,20 +48,20 @@
       statusText.textContent = 'Offline';
     }
 
-    // Load databases for welcome screen
+    // Load dashboard on welcome screen
     try {
-      const res = await fetch('/api/databases');
-      const dbs = await res.json();
-      renderWelcomeDatabases(dbs);
+      const res = await fetch('/api/dashboard');
+      const dashData = await res.json();
+      renderDashboard(dashData);
     } catch {}
   }
 
-  function renderWelcomeDatabases(dbs) {
+  function renderDashboard(data) {
     const container = document.getElementById('welcome-databases');
-    if (!container || !dbs || dbs.length === 0) return;
-    container.innerHTML = dbs.slice(0, 6).map(db =>
-      `<button class="db-chip" onclick="sendAction('query ${db.id}')">${escHtml(db.title)}</button>`
-    ).join('');
+    if (!container) return;
+    if (typeof Components !== 'undefined') {
+      container.innerHTML = Components.dashboard(data);
+    }
   }
 
   init();
