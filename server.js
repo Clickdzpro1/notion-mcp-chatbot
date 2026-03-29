@@ -48,7 +48,10 @@ if (process.argv.includes('--mcp-stdio')) {
     console.log(`  MCP (SSE):  http://localhost:${config.port}/sse`);
     console.log(`  Health:     http://localhost:${config.port}/api/health`);
     console.log('');
-    console.log(`  AI tools:   ${config.hasAI ? 'Enabled (ANTHROPIC_API_KEY set)' : 'Disabled (no ANTHROPIC_API_KEY)'}`);
+    const aiStatus = config.aiProvider === 'anthropic' ? 'Anthropic (Claude)'
+      : config.aiProvider === 'openrouter' ? `OpenRouter (${config.openRouterModel})`
+      : 'Disabled (no ANTHROPIC_API_KEY or OPENROUTER_API_KEY)';
+    console.log(`  AI Chat:    ${aiStatus}`);
     console.log('');
     console.log('  → Paste the MCP Server URL into your Notion agent\'s');
     console.log('    "Custom MCP server" connection dialog.');

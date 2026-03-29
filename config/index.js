@@ -16,16 +16,33 @@ if (!process.env.NOTION_API_KEY && !process.argv.includes('--mcp-stdio')) {
   process.exit(1);
 }
 
+// Determine AI provider
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY || null;
+const openRouterApiKey = process.env.OPENROUTER_API_KEY || null;
+
+let aiProvider = 'none';
+if (anthropicApiKey) aiProvider = 'anthropic';
+else if (openRouterApiKey) aiProvider = 'openrouter';
+
 module.exports = {
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY || null,
-  hasAI: !!process.env.ANTHROPIC_API_KEY,
+  anthropicApiKey,
+  openRouterApiKey,
+  aiProvider,
+  hasAI: aiProvider !== 'none',
   notionApiKey: process.env.NOTION_API_KEY,
   mcpToken: process.env.MCP_AUTH_TOKEN || null,
   notionDatabaseIds: process.env.NOTION_DATABASE_IDS
     ? process.env.NOTION_DATABASE_IDS.split(',').map(id => id.trim()).filter(Boolean)
     : [],
   port: parseInt(process.env.PORT, 10) || 3000,
+
+  // Anthropic settings
   claudeModel: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
+
+  // OpenRouter settings
+  openRouterModel: process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-exp:free',
+  openRouterSiteUrl: process.env.OPENROUTER_SITE_URL || null,
+
   botName: process.env.BOT_NAME || 'Notion Assistant',
   maxHistory: parseInt(process.env.MAX_HISTORY, 10) || 50,
 };
