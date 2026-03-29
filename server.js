@@ -38,7 +38,8 @@ if (process.argv.includes('--mcp-stdio')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 
-  app.listen(config.port, () => {
+  // Bind to 0.0.0.0 for Railway/Render/Docker compatibility
+  app.listen(config.port, '0.0.0.0', () => {
     console.log('');
     console.log(`  ✦ ${config.botName} is running!`);
     console.log('');
