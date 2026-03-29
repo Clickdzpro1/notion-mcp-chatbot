@@ -1,0 +1,21 @@
+{
+  "name": "notion-mcp-chatbot",
+  "version": "1.0.0",
+  "description": "AI Chatbot that connects to your Notion workspace via MCP - sell alongside your Notion templates and agents",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "mcp": "node server.js --mcp-stdio"
+  },
+  "keywords": ["notion", "chatbot", "mcp", "claude", "ai-agent"],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@notionhq/client": "^2.2.15",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "uuid": "^11.1.0"
+  }
+}
