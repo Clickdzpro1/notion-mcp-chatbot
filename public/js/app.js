@@ -57,7 +57,7 @@
   }
 
   function renderDashboard(data) {
-    const container = document.getElementById('welcome-databases');
+    const container = document.getElementById('welcome-dashboard');
     if (!container) return;
     if (typeof Components !== 'undefined') {
       container.innerHTML = Components.dashboard(data);
@@ -258,6 +258,7 @@
 
   newChatBtn.addEventListener('click', resetChat);
 
+  // Legacy suggestion buttons (if any exist in DOM)
   document.querySelectorAll('.suggestion').forEach(btn => {
     btn.addEventListener('click', () => sendMessage(btn.dataset.msg));
   });

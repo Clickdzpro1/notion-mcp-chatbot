@@ -285,10 +285,19 @@ const Components = {
   },
 
   // ============================================================
-  // Dashboard
+  // Dashboard with categories
   // ============================================================
   dashboard(data) {
     let html = '<div class="dashboard">';
+
+    // Quick actions row
+    if (data.quickActions && data.quickActions.length > 0) {
+      html += '<div class="dash-quick-row">';
+      data.quickActions.forEach(a => {
+        html += `<button class="chip-btn" onclick="sendAction('${escAttr(a.action)}')">${escHtml(a.label)}</button>`;
+      });
+      html += '</div>';
+    }
 
     // Quick stats
     if (data.quickStats && Object.keys(data.quickStats).length > 0) {
@@ -303,22 +312,33 @@ const Components = {
       html += '</div>';
     }
 
-    // Quick actions
-    if (data.quickActions && data.quickActions.length > 0) {
-      html += '<div class="dash-actions">';
-      data.quickActions.forEach(a => {
-        html += `<button class="chip-btn" onclick="sendAction('${escAttr(a.action)}')">${escHtml(a.label)}</button>`;
-      });
-      html += '</div>';
-    }
-
-    // Database list
-    if (data.databases && data.databases.length > 0) {
-      html += '<div class="dash-dbs">';
-      data.databases.slice(0, 8).forEach(db => {
+    // Databases grouped by category
+    if (data.categories && Object.keys(data.categories).length > 0) {
+      for (const [catKey, cat] of Object.entries(data.categories)) {
+        if (!cat.databases || cat.databases.length === 0) continue;
+        const catId = 'cat-' + catKey;
+        html += `<div class="dash-category">
+          <div class="dash-cat-header" onclick="toggleCategory('${catId}')">
+            <span class="dash-cat-emoji">${escHtml(cat.emoji || '📁')}</span>
+            <span class="dash-cat-name">${escHtml(cat.name)}</span>
+            <span class="dash-cat-count">${cat.databases.length}</span>
+            <span class="dash-cat-arrow" id="arrow-${catId}">▶</span>
+          </div>
+          <div class="dash-cat-items" id="${catId}">
+            ${cat.databases.map(db => `
+              <div class="dash-db" onclick="sendAction('query ${db.id}')">
+                <div class="dash-db-title">${escHtml(db.title)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }
+    } else if (data.databases && data.databases.length > 0) {
+      // Fallback: flat list
+      html += '<div class="dash-cat-items open">';
+      data.databases.forEach(db => {
         html += `<div class="dash-db" onclick="sendAction('query ${db.id}')">
           <div class="dash-db-title">${escHtml(db.title)}</div>
-          <div class="dash-db-desc">${escHtml(db.description || '')}</div>
         </div>`;
       });
       html += '</div>';
@@ -344,6 +364,16 @@ function escHtml(str) {
 function escAttr(str) {
   if (!str) return '';
   return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+// Toggle category expand/collapse
+function toggleCategory(catId) {
+  const items = document.getElementById(catId);
+  const arrow = document.getElementById('arrow-' + catId);
+  if (items) {
+    items.classList.toggle('open');
+    if (arrow) arrow.classList.toggle('open');
+  }
 }
 
 // Global action sender — called by onclick handlers
