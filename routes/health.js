@@ -10,22 +10,12 @@ router.get('/', async (req, res) => {
     const notion = new Client({ auth: config.notionApiKey });
     await notion.users.me();
     status.notion = true;
-  } catch {}
+  } catch (err) {
+    status.notion_error = err.message;
+  }
 
-  try {
-    const Anthropic = require('@anthropic-ai/sdk');
-    const config = require('../config');
-    const client = new Anthropic({ apiKey: config.anthropicApiKey });
-    // A minimal call to verify the key works
-    await client.messages.create({
-      model: config.claudeModel,
-      max_tokens: 10,
-      messages: [{ role: 'user', content: 'hi' }],
-    });
-    status.claude = true;
-  } catch {}
-
-  status.status = status.notion && status.claude ? 'ok' : 'degraded';
+  status.claude = !!require('../config').hasAI;
+  status.status = status.notion ? 'ok' : 'degraded';
   res.json(status);
 });
 
