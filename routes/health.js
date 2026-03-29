@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const status = { status: 'ok', notion: false, claude: false };
+  const status = { status: 'ok', notion: false, tools: 14, mode: 'zero-dependency' };
 
   try {
     const { Client } = require('@notionhq/client');
@@ -14,9 +14,6 @@ router.get('/', async (req, res) => {
     status.notion_error = err.message;
   }
 
-  const cfg = require('../config');
-  status.ai = cfg.hasAI;
-  status.ai_provider = cfg.aiProvider;
   status.status = status.notion ? 'ok' : 'degraded';
   res.json(status);
 });
